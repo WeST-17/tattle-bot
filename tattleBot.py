@@ -56,9 +56,13 @@ def run():
         Function:
         - Asks user for user tag and message to file complaint.
         """
-        await ctx.send("Who you got tea on?")
+        await ctx.send("Who you got tea on? Enter 'x' to cancel.")
         try:
             user_tag = await bot.wait_for('message', timeout=60, check=lambda m: m.author == ctx.author)
+
+            # Check if the user wants to cancel
+            if user_tag.content.lower() == 'x':
+                return
 
             # Extract user ID using regular expression
             user_match = re.match(r"<@!?(\d+)>", user_tag.content)
