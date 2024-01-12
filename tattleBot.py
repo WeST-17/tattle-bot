@@ -74,7 +74,7 @@ def run():
                 member = ctx.guild.get_member(user_id)
 
                 if member:
-                    user_name = member.display_name
+                    user_name = member.global_name
                 else:
                     user_name = f"Unknown User (ID: {user_id})"
                 
