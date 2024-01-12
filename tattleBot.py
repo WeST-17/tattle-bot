@@ -62,6 +62,7 @@ def run():
 
             # Check if the user wants to cancel
             if user_tag.content.lower() == 'x':
+                await ctx.send("teahe")
                 return
 
             # Extract user ID using regular expression
