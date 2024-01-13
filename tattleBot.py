@@ -182,43 +182,35 @@ def run():
 
     # check demotion period and weeks left
     @bot.command()
-    async def check(ctx):
-        await ctx.send("Which user's demotion period do you want to check? Use '@' to find a user. Enter 'x' to cancel.")
-        try:
-            user_tag = await bot.wait_for('message', timeout=60, check=lambda m: m.author == ctx.author)
+    async def check(ctx, user_tag: str):
+        # Extract user ID using regular expression
+        user_match = re.match(r"<@!?(\d+)>", user_tag)
 
-            # Check if the user wants to cancel
-            if user_tag.content.lower() == 'x':
-                await ctx.send("Demotion check canceled.")
-                return
+        if user_match:
+            user_id = int(user_match.group(1))
 
-            # Extract user ID using regular expression
-            user_match = re.match(r"<@!?(\d+)>", user_tag.content)
-            
-            if user_match:
-                user_id = int(user_match.group(1))
-                
-                # Get the member from the guild
-                member = ctx.guild.get_member(user_id)
+            # Get the member from the guild
+            member = ctx.guild.get_member(user_id)
 
-                if member:
-                    user_name = member.global_name
-                else:
-                    user_name = f"Unknown User (ID: {user_id})"
+            if member:
+                user_name = member.global_name
+            else:
+                user_name = f"Unknown User (ID: {user_id})"
 
-            userDemoCheck = demoCheck(demotionSheet, user_name)
-            
-            for row in userDemoCheck:
+            # Call demoCheck with the user_name
+            user_demo_check = demoCheck(demotionSheet, user_name)
+
+            for row in user_demo_check:
                 message = (
                     f"Name: {row[0]}\n"
                     f"Remaining weeks of demotion: {row[1]}\n"
                     f"Last day of demotion: {row[2]}"
                 )
                 await ctx.send(message)
-            
-        except asyncio.TimeoutError:
-            await ctx.send("You took too long to respond. The demotion checking process has been canceled.")
+        else:
+            await ctx.send("Invalid user mention. Please use '@' to find a user.")
 
     bot.run(TOKEN)
 
 run()
+
