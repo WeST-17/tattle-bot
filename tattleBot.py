@@ -39,6 +39,104 @@ def run():
         print('Logged on as {0}!'.format(bot.user))
 
     @bot.command()
+    async def menu(ctx):
+        helpMessage = (
+            f"--- Help Menu ---\n"
+            f"--- Commands ---\n"
+            f"!tattle\n"
+            f"!check\n\n"
+            f"--- Admin Commands ---\n"
+            f"!demote\n"
+            f"!compile\n"
+        )
+
+        await ctx.send(helpMessage)
+        return
+
+    @bot.command()
+    async def tattle(ctx):
+        """
+        Tattle on someone.
+
+        Parameters:
+        - None
+        
+        Function:
+        - Asks user for user tag and message to file complaint.
+        """
+        await ctx.send("Who do you have tea on? Use '@' to find a user. Enter 'x' to cancel.")
+        try:
+            user_tag = await bot.wait_for('message', timeout=60, check=lambda m: m.author == ctx.author)
+
+            # Check if the user wants to cancel
+            if user_tag.content.lower() == 'x':
+                await ctx.send("Complaint canceled.")
+                return
+
+            # Extract user ID using regular expression
+            user_match = re.match(r"<@!?(\d+)>", user_tag.content)
+            
+            if user_match:
+                user_id = int(user_match.group(1))
+                
+                # Get the member from the guild
+                member = ctx.guild.get_member(user_id)
+
+                if member:
+                    user_name = member.global_name
+                else:
+                    user_name = f"Unknown User (ID: {user_id})"
+                    await ctx.send("This user does not exist...")
+                    return
+                
+                await ctx.send(f"What tea do you have about {user_tag.content}?")
+                
+                complaint = await bot.wait_for('message', timeout=60, check=lambda m: m.author == ctx.author)
+
+                await ctx.send(f"How many weeks do you think the demotion should be?")
+
+                banLength = await bot.wait_for('message', timeout=60, check=lambda m: m.author == ctx.author and is_integer(m))
+                await ctx.send("Thank you for your tea. Someone will look into it.")
+
+                gcFile(teahouseTea, user_name, complaint, banLength)
+            else:
+                await ctx.send("Invalid user mention.")
+        except asyncio.TimeoutError:
+            await ctx.send("You took too long to respond. The accusation process has been canceled.")
+        except ValueError:
+            await ctx.send("Invalid number. Please enter a valid number of weeks.")
+
+    # check demotion period and weeks left
+    @bot.command()
+    async def check(ctx, user_tag: str):
+        # Extract user ID using regular expression
+        user_match = re.match(r"<@!?(\d+)>", user_tag)
+
+        if user_match:
+            user_id = int(user_match.group(1))
+
+            # Get the member from the guild
+            member = ctx.guild.get_member(user_id)
+
+            if member:
+                user_name = member.global_name
+            else:
+                user_name = f"Unknown User (ID: {user_id})"
+
+            # Call demoCheck with the user_name
+            user_demo_check = demoCheck(demotionSheet, user_name)
+
+            for row in user_demo_check:
+                message = (
+                    f"Name: {row[0]}\n"
+                    f"Remaining weeks of demotion: {row[1]}\n"
+                    f"Last day of demotion: {row[2]}"
+                )
+                await ctx.send(message)
+        else:
+            await ctx.send("Invalid user mention. Please use '@' to find a user.")
+
+    @bot.command()
     @commands.has_any_role('Brew Tea Ful', 'Koala Tea')
     async def demote(ctx):
         '''
@@ -125,90 +223,6 @@ def run():
         
         except asyncio.TimeoutError:
             await ctx.send("You took too long to respond. The data request has been canceled.")
-
-    
-    @bot.command()
-    async def tattle(ctx):
-        """
-        Tattle on someone.
-
-        Parameters:
-        - None
-        
-        Function:
-        - Asks user for user tag and message to file complaint.
-        """
-        await ctx.send("Who do you have tea on? Use '@' to find a user. Enter 'x' to cancel.")
-        try:
-            user_tag = await bot.wait_for('message', timeout=60, check=lambda m: m.author == ctx.author)
-
-            # Check if the user wants to cancel
-            if user_tag.content.lower() == 'x':
-                await ctx.send("Complaint canceled.")
-                return
-
-            # Extract user ID using regular expression
-            user_match = re.match(r"<@!?(\d+)>", user_tag.content)
-            
-            if user_match:
-                user_id = int(user_match.group(1))
-                
-                # Get the member from the guild
-                member = ctx.guild.get_member(user_id)
-
-                if member:
-                    user_name = member.global_name
-                else:
-                    user_name = f"Unknown User (ID: {user_id})"
-                    await ctx.send("This user does not exist...")
-                    return
-                
-                await ctx.send(f"What tea do you have about {user_tag.content}?")
-                
-                complaint = await bot.wait_for('message', timeout=60, check=lambda m: m.author == ctx.author)
-
-                await ctx.send(f"How many weeks do you think the demotion should be?")
-
-                banLength = await bot.wait_for('message', timeout=60, check=lambda m: m.author == ctx.author and is_integer(m))
-                await ctx.send("Thank you for your tea. Someone will look into it.")
-
-                gcFile(teahouseTea, user_name, complaint, banLength)
-            else:
-                await ctx.send("Invalid user mention.")
-        except asyncio.TimeoutError:
-            await ctx.send("You took too long to respond. The accusation process has been canceled.")
-        except ValueError:
-            await ctx.send("Invalid number. Please enter a valid number of weeks.")
-
-    # check demotion period and weeks left
-    @bot.command()
-    async def check(ctx, user_tag: str):
-        # Extract user ID using regular expression
-        user_match = re.match(r"<@!?(\d+)>", user_tag)
-
-        if user_match:
-            user_id = int(user_match.group(1))
-
-            # Get the member from the guild
-            member = ctx.guild.get_member(user_id)
-
-            if member:
-                user_name = member.global_name
-            else:
-                user_name = f"Unknown User (ID: {user_id})"
-
-            # Call demoCheck with the user_name
-            user_demo_check = demoCheck(demotionSheet, user_name)
-
-            for row in user_demo_check:
-                message = (
-                    f"Name: {row[0]}\n"
-                    f"Remaining weeks of demotion: {row[1]}\n"
-                    f"Last day of demotion: {row[2]}"
-                )
-                await ctx.send(message)
-        else:
-            await ctx.send("Invalid user mention. Please use '@' to find a user.")
 
     bot.run(TOKEN)
 
