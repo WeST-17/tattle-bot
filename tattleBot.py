@@ -41,7 +41,7 @@ def run():
     @bot.command()
     async def menu(ctx):
         helpMessage = (
-            f"--- Help Menu ---\n"
+            f"--- Help Menu ---\n\n"
             f"--- Commands ---\n"
             f"!tattle\n"
             f"!check\n\n"
