@@ -17,6 +17,24 @@ def teaGet(sheet, user: str):
 def demoCheck(sheet, user: str):
     demotion_check = sheet.get_all_values()
     userFilter = [row for row in demotion_check if row[0] == user]
+    weeksPassed = datetime.today()
+
+    if userFilter:
+        target_row = userFilter[0]
+
+        # Obtain cells to update
+        cellUpdate = "B" + str(demotion_check.index(target_row) + 1)
+        dateCellUpdate = "C" + str(demotion_check.index(target_row) + 1)
+        target_col_index = 1
+        target_date_index = 2
+
+        current_end_date = datetime.strptime(target_row[target_date_index], "%Y-%m-%d %H:%M:%S")
+        current_weeks = int(target_row[target_col_index])
+        totalWeeksLeft = (current_end_date - weeksPassed).days // 7 + 1
+
+        sheet.update(values=str(totalWeeksLeft), range_name=cellUpdate)
+        userFilter = [row for row in sheet.get_all_values() if row[0] == user]
+        
     return userFilter
 
 # Demotion adjuster
