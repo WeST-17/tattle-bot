@@ -1,13 +1,14 @@
+from helper import *
 from dotenv import load_dotenv
 from os import environ
 import discord
 import re
 from discord.ext import commands
 import asyncio
-from datetime import date, datetime, timedelta #date.today()
 
 # Google Sheets API and gspread imports
 import gspread
+
 
 load_dotenv()
 
@@ -15,51 +16,10 @@ load_dotenv()
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
-# Appends complaint to database
-def gcFile(sheet, accused: str, tea: str, ban: str):
-    currentDate = date.today().isoformat()
-    all_values = sheet.get_all_values()
-    # Filter out rows with no values
-    filledRows = [row for row in all_values if any(cell.strip() for cell in row)]
-    sheet.append_row([currentDate, accused, tea.content, ban.content])
-
-# Compiles complaint report for admins
-def teaGet(sheet, user: str):
-    complaint_values = sheet.get_all_values()
-    filtered_complaints = [row for row in complaint_values if row[1] == user]
-    return filtered_complaints
-
-# increase and decrease demo time per user, for admin use only
-# def demotions(sheet, userD: str):
-#     user_demos = sheet.get_all_values()
-#     filter_user = [row[1] for row in user_demos if row[0] == userD]
-#     demo_length = 
-
-#     return
-
-# integer check
-def is_integer(message):
-    try:
-        int(message.content)
-        return True
-    except ValueError:
-        return False
-    
-# valid date check:
-def is_valid_date(message):
-    try:
-        # Try to parse the message content as a date
-        datetime.strptime(message.content, "%Y-%m-%d")
-        return True
-    except ValueError:
-        return False
-
 # Discord Bot API
 TOKEN = environ.get('DISCORD_TOKEN')
 
 def run():
-    userBans = {}
-    
     # Service account login for excel, can change depending on form access
     gc = gspread.service_account(filename="tattle_cred.json")
     # Opens google sheet
@@ -81,17 +41,19 @@ def run():
     @bot.command()
     @commands.has_any_role('Brew Tea Ful', 'Koala Tea')
     async def demote(ctx):
+        '''
         await ctx.send("This command is under construction!")
         return
-        '''
-        Increase or decrease demotion time
+
+        Add a role to a member for a specified period of time.
 
         Parameters:
         - None
         Function:
-        - Allows admins to increase or decrease demotion time per person. Tracked in google sheets
-        
-        await ctx.send("Which user's demotion time do you want to adjust? Enter 'x' to cancel.")
+        - Allows admins to add 'Cup of Shame' demotion role per person. Can adjust amount of time. Tracked in google sheets(?)
+        '''     
+ 
+        await ctx.send("Which user do you want to demote? Use '@' to find a user. Enter 'x' to cancel.")
         try:
             user_demo = await bot.wait_for('message', timeout=60, check=lambda m: m.author == ctx.author)
 
@@ -107,13 +69,18 @@ def run():
                 # Get the member from the guild
                 member = ctx.guild.get_member(user_id)
 
-            demotions(demotionSheet, member.global_name)
+            await ctx.send("How many demotion weeks should be added?")
+            demoWeeksAdd = await bot.wait_for('message', timeout=60, check=lambda m: m.author == ctx.author and is_integer(m) or is_valid_date(m))
+            adjustDemotion = demotion(demotionSheet, member.global_name, demoWeeksAdd)
 
-            await ctx.send("User demotion changed!")
+            await ctx.send(adjustDemotion)
+            
         
         except asyncio.TimeoutError:
             await ctx.send("You took too long to respond. The data request has been canceled.")
-        '''
+        except ValueError:
+            await ctx.send("Invalid number. Please enter a valid number of weeks.")
+        
     @bot.command()
     @commands.has_any_role('Brew Tea Ful', 'Koala Tea')
     async def compile(ctx):
@@ -148,8 +115,9 @@ def run():
 
             if filteredComplaints:
                 await ctx.send("Compiled Complaints: ")
+                await ctx.send("----------------------")
                 for row in filteredComplaints:
-                    for data in row[1:]:
+                    for data in row:
                         await ctx.send(str(data))
                     await ctx.send("----------------------")
             else:
@@ -170,7 +138,7 @@ def run():
         Function:
         - Asks user for user tag and message to file complaint.
         """
-        await ctx.send("Who do you have tea on? Enter 'x' to cancel.")
+        await ctx.send("Who do you have tea on? Use '@' to find a user. Enter 'x' to cancel.")
         try:
             user_tag = await bot.wait_for('message', timeout=60, check=lambda m: m.author == ctx.author)
 
@@ -192,6 +160,8 @@ def run():
                     user_name = member.global_name
                 else:
                     user_name = f"Unknown User (ID: {user_id})"
+                    await ctx.send("This user does not exist...")
+                    return
                 
                 await ctx.send(f"What tea do you have about {user_tag.content}?")
                 
@@ -209,6 +179,45 @@ def run():
             await ctx.send("You took too long to respond. The accusation process has been canceled.")
         except ValueError:
             await ctx.send("Invalid number. Please enter a valid number of weeks.")
+
+    # check demotion period and weeks left
+    @bot.command()
+    async def check(ctx):
+        await ctx.send("Which user's demotion period do you want to check? Use '@' to find a user. Enter 'x' to cancel.")
+        try:
+            user_tag = await bot.wait_for('message', timeout=60, check=lambda m: m.author == ctx.author)
+
+            # Check if the user wants to cancel
+            if user_tag.content.lower() == 'x':
+                await ctx.send("Demotion check canceled.")
+                return
+
+            # Extract user ID using regular expression
+            user_match = re.match(r"<@!?(\d+)>", user_tag.content)
+            
+            if user_match:
+                user_id = int(user_match.group(1))
+                
+                # Get the member from the guild
+                member = ctx.guild.get_member(user_id)
+
+                if member:
+                    user_name = member.global_name
+                else:
+                    user_name = f"Unknown User (ID: {user_id})"
+
+            userDemoCheck = demoCheck(demotionSheet, user_name)
+            
+            for row in userDemoCheck:
+                message = (
+                    f"Name: {row[0]}\n"
+                    f"Remaining weeks of demotion: {row[1]}\n"
+                    f"Last day of demotion: {row[2]}"
+                )
+                await ctx.send(message)
+            
+        except asyncio.TimeoutError:
+            await ctx.send("You took too long to respond. The demotion checking process has been canceled.")
 
     bot.run(TOKEN)
 
