@@ -44,7 +44,7 @@ def run():
             f"--- Help Menu ---\n\n"
             f"--- Commands ---\n"
             f"!tattle\n"
-            f"!check\n\n"
+            f"!check @[user-tag]\n\n"
             f"--- Admin Commands ---\n"
             f"!demote\n"
             f"!compile\n"
@@ -137,12 +137,9 @@ def run():
             await ctx.send("Invalid user mention. Please use '@' to find a user.")
 
     @bot.command()
-    @commands.has_any_role('Brew Tea Ful', 'Koala Tea')
-    async def demote(ctx):
+    #@commands.has_any_role('Brew Tea Ful', 'Koala Tea')
+    async def demote(ctx, user_tag: str):
         '''
-        await ctx.send("This command is under construction!")
-        return
-
         Add a role to a member for a specified period of time.
 
         Parameters:
@@ -150,29 +147,33 @@ def run():
         Function:
         - Allows admins to add 'Cup of Shame' demotion role per person. Can adjust amount of time. Tracked in google sheets(?)
         '''     
- 
-        await ctx.send("Which user do you want to demote? Use '@' to find a user. Enter 'x' to cancel.")
         try:
-            user_demo = await bot.wait_for('message', timeout=60, check=lambda m: m.author == ctx.author)
-
-            if user_demo.content.lower() == 'x':
-                await ctx.send("Request canceled.")
-                return
             # Extract user ID using regular expression
-            user_match = re.match(r"<@!?(\d+)>", user_demo.content)
-            
+            user_match = re.match(r"<@!?(\d+)>", user_tag)
+
             if user_match:
                 user_id = int(user_match.group(1))
-                
+
                 # Get the member from the guild
                 member = ctx.guild.get_member(user_id)
 
-            await ctx.send("How many demotion weeks should be added?")
-            demoWeeksAdd = await bot.wait_for('message', timeout=60, check=lambda m: m.author == ctx.author and is_integer(m) or is_valid_date(m))
-            adjustDemotion = demotion(demotionSheet, member.global_name, demoWeeksAdd)
+                if member:
+                    user_name = member.global_name
+                else:
+                    user_name = f"Unknown User (ID: {user_id})"
 
-            await ctx.send(adjustDemotion)
+                await ctx.send("How many demotion weeks should be added? Enter 'x' to cancel.")
+                if user_tag.content.lower() == 'x':
+                    await ctx.send("Complaint canceled.")
+                    return
+
+                demoWeeksAdd = await bot.wait_for('message', timeout=60, check=lambda m: m.author == ctx.author and is_integer(m) or is_valid_date(m))
+                adjustDemotion = demotion(demotionSheet, member.global_name, demoWeeksAdd)
+
+                await ctx.send(adjustDemotion)
             
+            else:
+                await ctx.send("Invalid user mention. Please use '@' to find a user.")
         
         except asyncio.TimeoutError:
             await ctx.send("You took too long to respond. The data request has been canceled.")
