@@ -137,7 +137,7 @@ def run():
             await ctx.send("Invalid user mention. Please use '@' to find a user.")
 
     @bot.command()
-    #@commands.has_any_role('Brew Tea Ful', 'Koala Tea')
+    @commands.has_any_role('Brew Tea Ful', 'Koala Tea')
     async def demote(ctx, user_tag: str):
         '''
         Add a role to a member for a specified period of time.
