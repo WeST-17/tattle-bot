@@ -20,6 +20,9 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 TOKEN = environ.get('DISCORD_TOKEN')
 
 def run():
+    # Maybe could implement a separate file for admin roles?
+    # admin = [] or from a json file
+
     # Service account login for excel, can change depending on form access
     gc = gspread.service_account(filename="tattle_cred.json")
     # Opens google sheet
@@ -42,12 +45,12 @@ def run():
     async def menu(ctx):
         helpMessage = (
             f"--- Help Menu ---\n\n"
-            f"--- Commands ---\n"
+            f"--- General Commands ---\n"
             f"!tattle\n"
-            f"!check @[user-tag]\n\n"
+            f"!check @[user tag]\n\n"
             f"--- Admin Commands ---\n"
-            f"!demote\n"
-            f"!compile\n"
+            f"!demote @[user tag]\n"
+            f"!compile @[user tag]\n"
         )
 
         await ctx.send(helpMessage)
@@ -105,6 +108,7 @@ def run():
             await ctx.send("You took too long to respond. The accusation process has been canceled.")
         except ValueError:
             await ctx.send("Invalid number. Please enter a valid number of weeks.")
+            
 
     # check demotion period and weeks left
     @bot.command()
@@ -126,6 +130,10 @@ def run():
             # Call demoCheck with the user_name
             user_demo_check = demoCheck(demotionSheet, user_name)
 
+            if len(user_demo_check) == 0:
+                await ctx.send("There is no active demotion period for this user.")
+                return
+
             for row in user_demo_check:
                 message = (
                     f"Name: {row[0]}\n"
@@ -136,6 +144,7 @@ def run():
         else:
             await ctx.send("Invalid user mention. Please use '@' to find a user.")
 
+    # Admin command, update database and demote user role
     @bot.command()
     @commands.has_any_role('Brew Tea Ful', 'Koala Tea')
     async def demote(ctx, user_tag: str):
@@ -146,7 +155,9 @@ def run():
         - None
         Function:
         - Allows admins to add 'Cup of Shame' demotion role per person. Can adjust amount of time. Tracked in google sheets(?)
-        '''     
+        '''
+        demote_role = discord.utils.get(ctx.guild.roles, name="Cup of Shame")
+
         try:
             # Extract user ID using regular expression
             user_match = re.match(r"<@!?(\d+)>", user_tag)
@@ -163,12 +174,21 @@ def run():
                     user_name = f"Unknown User (ID: {user_id})"
 
                 await ctx.send("How many demotion weeks should be added? Enter 'x' to cancel.")
-                if user_tag.content.lower() == 'x':
+                demoWeeksAdd = await bot.wait_for('message', timeout=60, check=lambda m: m.author == ctx.author and is_integer(m) or is_valid_date(m))
+
+                if demoWeeksAdd.content.lower() == 'x':
                     await ctx.send("Complaint canceled.")
                     return
-
-                demoWeeksAdd = await bot.wait_for('message', timeout=60, check=lambda m: m.author == ctx.author and is_integer(m) or is_valid_date(m))
+                # Call function to update Google Sheet database
                 adjustDemotion = demotion(demotionSheet, member.global_name, demoWeeksAdd)
+
+                # Set member role to Cup of Shame:
+                if demote_role:
+                    await member.edit(roles=[])
+                    await member.add_roles(demote_role)
+                    await ctx.send(f"{member.display_name} put in the {demote_role.name}")
+                else:
+                    await ctx.send("The 'Cup of Shame' role does not exist.")
 
                 await ctx.send(adjustDemotion)
             
@@ -179,10 +199,11 @@ def run():
             await ctx.send("You took too long to respond. The data request has been canceled.")
         except ValueError:
             await ctx.send("Invalid number. Please enter a valid number of weeks.")
-        
+
+     
     @bot.command()
     @commands.has_any_role('Brew Tea Ful', 'Koala Tea')
-    async def compile(ctx):
+    async def compile(ctx, user_tag: str):
         '''
         Get submissions from database in discord
 
@@ -192,16 +213,7 @@ def run():
         Function:
         - Gets data about tea for specific 
         '''
-        await ctx.send("What user data do you want to compile? Enter 'x' to cancel.")
         try:
-            user_tag = await bot.wait_for('message', timeout=60, check=lambda m: m.author == ctx.author)
-
-            # Check if the user wants to cancel
-            if user_tag.content.lower() == 'x':
-                await ctx.send("Request canceled.")
-                return
-
-            # Extract user ID using regular expression
             user_match = re.match(r"<@!?(\d+)>", user_tag.content)
             
             if user_match:
@@ -209,6 +221,9 @@ def run():
                 
                 # Get the member from the guild
                 member = ctx.guild.get_member(user_id)
+            else:
+                await ctx.send("User not found...")
+                return
             
             filteredComplaints = teaGet(teahouseTea, member.global_name)
 
