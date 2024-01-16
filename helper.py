@@ -37,39 +37,6 @@ def demoCheck(sheet, user: str):
         
     return userFilter
 
-# Demotion adjuster
-# Note for later:
-    # elif userFilter and is_valid_date(weeks):
-    #     # New end date for demotion
-    #     weeksAdd = datetime.strptime(weeks.content, "%Y-%m-%d %H:%M:%S")
-        
-    #     target_row = userFilter[0]
-
-    #     # Obtain cells to update
-    #     cellUpdate = "B" + str(demoAdd.index(target_row) + 1)
-    #     dateCellUpdate = "C" + str(demoAdd.index(target_row) + 1)
-    #     target_col_index = 1
-    #     target_date_index = 2
-
-    #     current_end_date = datetime.strptime(target_row[target_date_index], "%Y-%m-%d %H:%M:%S")
-    #     new_weeks_count = (weeksAdd - current_end_date) // 7 + 1 # calculate new weeks count from new end date and current end date
-
-    #     current_weeks = int(target_row[target_col_index])
-    #     totalWeeks = current_weeks + new_weeks_count
-
-    #     sheet.update(values=str(totalWeeks), range_name=cellUpdate)
-    #     sheet.update(values=str(weeksAdd), range_name=dateCellUpdate)
-    #     return "User demotion length and end date updated!"
-
-    # elif not userFilter and is_valid_date(weeks):
-    #     end_date = datetime.strptime(weeks, "%Y-%m-%d")
-
-    #     current_date = date.today().isoformat()
-    #     new_weeks_count = (end_date - current_date) // 7 + 1 # calculate new weeks count from new end date and current end date
-
-    #     sheet.update(values=str(new_weeks_count), range_name=cellUpdate)
-    #     sheet.update(values=str(end_date), range_name=dateCellUpdate)
-    #     return "New user demotion length and end date updated!"
 
 def demotion(sheet, user: str, weeks: str):
     demoAdd = sheet.get_all_values()
