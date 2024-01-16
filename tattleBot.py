@@ -183,12 +183,12 @@ def run():
                 adjustDemotion = demotion(demotionSheet, member.global_name, demoWeeksAdd)
 
                 # Set member role to Cup of Shame:
-                if demote_role:
-                    await member.edit(roles=[])
-                    await member.add_roles(demote_role)
-                    await ctx.send(f"{member.display_name} put in the {demote_role.name}")
-                else:
-                    await ctx.send("The 'Cup of Shame' role does not exist.")
+                # if demote_role:
+                #     await member.edit(roles=[])
+                #     await member.add_roles(demote_role)
+                #     await ctx.send(f"{member.display_name} put in the {demote_role.name}")
+                # else:
+                #     await ctx.send("The 'Cup of Shame' role does not exist.")
 
                 await ctx.send(adjustDemotion)
             
