@@ -1,4 +1,6 @@
 from helper import *
+from version_notes import *
+
 from dotenv import load_dotenv
 from os import environ
 import discord
@@ -42,9 +44,16 @@ def run():
         print('Logged on as {0}!'.format(bot.user))
 
     @bot.command()
+    async def version(ctx):
+        await ctx.send(version_1_1)
+        return
+
+    @bot.command()
     async def menu(ctx):
         helpMessage = (
-            f"--- Help Menu ---\n\n"
+            f"--- Help Menu ---\n"
+            f"!menu\n"
+            f"!version\n\n"
             f"--- General Commands ---\n"
             f"!tattle\n"
             f"!check @[user tag]\n\n"
@@ -136,11 +145,11 @@ def run():
 
             for row in user_demo_check:
                 message = (
-                    f"Name: {row[0]}\n"
                     f"Remaining weeks of demotion: {row[1]}\n"
                     f"Last day of demotion: {row[2]}"
                 )
-                await ctx.send(message)
+                embedCheck = discord.Embed(title=f"Current Demotion Period for {member.display_name}", description=message, color=0xaeffff)
+                await ctx.send(embed=embedCheck)
         else:
             await ctx.send("Invalid user mention. Please use '@' to find a user.")
 
