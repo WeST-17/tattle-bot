@@ -214,7 +214,7 @@ def run():
         - Gets data about tea for specific 
         '''
         try:
-            user_match = re.match(r"<@!?(\d+)>", user_tag.content)
+            user_match = re.match(r"<@!?(\d+)>", user_tag)
             
             if user_match:
                 user_id = int(user_match.group(1))
@@ -228,14 +228,19 @@ def run():
             filteredComplaints = teaGet(teahouseTea, member.global_name)
 
             if filteredComplaints:
-                await ctx.send("Compiled Complaints: ")
-                await ctx.send("----------------------")
+                message = "Compiled Complaints: \n----------------------\n"
                 for row in filteredComplaints:
-                    for data in row:
-                        await ctx.send(str(data))
-                    await ctx.send("----------------------")
+                    complaint = (
+                        f"Date: {row[1]}\n"
+                        f"Tea: {row[2]}\n"
+                        f"Demotion Length Request: {row[3]}\n"
+                        f"----------------------\n")
+                    message += complaint
+                embed = discord.Embed(title=f"Compiled Complaints for {member.display_name}", description=message, color=0xaeffff)
+                await ctx.send(embed=embed)
             else:
                 await ctx.send("No complaints found for this user")
+                return
         
         except asyncio.TimeoutError:
             await ctx.send("You took too long to respond. The data request has been canceled.")

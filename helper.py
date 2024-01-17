@@ -8,6 +8,7 @@ def gcFile(sheet, accused: str, tea: str, ban: str):
     sheet.append_row([accused, currentDate, tea.content, ban.content])
 
 # Compiles complaint report for admins by username
+# Need to update to include date range. Maybe default to past month? (01/15/2024)
 def teaGet(sheet, user: str):
     complaint_values = sheet.get_all_values()
     filtered_complaints = [row for row in complaint_values if row[0] == user]
