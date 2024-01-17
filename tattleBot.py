@@ -50,6 +50,9 @@ def run():
 
     @bot.command()
     async def menu(ctx):
+        '''
+        Check what commands are available.
+        '''
         helpMessage = (
             f"--- Help Menu ---\n"
             f"!menu\n"
@@ -122,6 +125,9 @@ def run():
     # check demotion period and weeks left
     @bot.command()
     async def check(ctx, user_tag: str):
+        '''
+        Check demotion period and weeks left.
+        '''
         # Extract user ID using regular expression
         user_match = re.match(r"<@!?(\d+)>", user_tag)
 
@@ -158,7 +164,7 @@ def run():
     @commands.has_any_role('Brew Tea Ful', 'Koala Tea')
     async def demote(ctx, user_tag: str):
         '''
-        Add a role to a member for a specified period of time.
+        Update demotion period for a user. Add user to Cup of Shame(Under Construction).
 
         Parameters:
         - None
@@ -214,7 +220,7 @@ def run():
     @commands.has_any_role('Brew Tea Ful', 'Koala Tea')
     async def compile(ctx, user_tag: str):
         '''
-        Get submissions from database in discord
+        Get submissions from database in discord.
 
         Parameters:
         - None
