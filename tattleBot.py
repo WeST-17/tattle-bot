@@ -45,6 +45,9 @@ def run():
 
     @bot.command()
     async def version(ctx):
+        '''
+        See latest version notes.
+        '''
         await ctx.send(version_1_1)
         return
 
