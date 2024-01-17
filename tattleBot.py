@@ -1,5 +1,5 @@
 from helper import *
-from version_notes import *
+from version_notes import version_1_1
 
 from dotenv import load_dotenv
 from os import environ
