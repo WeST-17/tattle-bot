@@ -114,7 +114,7 @@ def run():
                 await ctx.send(f"How many weeks do you think the demotion should be?")
 
                 banLength = await bot.wait_for('message', timeout=60, check=lambda m: m.author == ctx.author and is_integer(m))
-                await ctx.send("Thank you for your tea. Someone will look into it.")
+                await ctx.send("Thank you for your tea. Someone will look into it. You can include evidence below:")
 
                 gcFile(teahouseTea, user_name, complaint, banLength)
             else:
