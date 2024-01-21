@@ -29,7 +29,7 @@ def demoCheck(sheet, user: str):
         target_col_index = 1
         target_date_index = 2
 
-        current_end_date = datetime.strptime(target_row[target_date_index], "%Y-%m-%d %H:%M:%S")
+        current_end_date = datetime.strptime(target_row[target_date_index], "%Y-%m-%d")
         current_weeks = int(target_row[target_col_index])
         totalWeeksLeft = (current_end_date - weeksPassed).days // 7 + 1
 

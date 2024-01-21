@@ -200,15 +200,15 @@ def run():
                 # Call function to update Google Sheet database
                 adjustDemotion = demotion(demotionSheet, member.global_name, demoWeeksAdd)
 
+                await ctx.send(adjustDemotion)
+                
                 # Set member role to Cup of Shame:
                 # if demote_role:
                 #     await member.edit(roles=[])
                 #     await member.add_roles(demote_role)
                 #     await ctx.send(f"{member.display_name} put in the {demote_role.name}")
                 # else:
-                #     await ctx.send("The 'Cup of Shame' role does not exist.")
-
-                await ctx.send(adjustDemotion)
+                #     await ctx.send("but nothing happened...")
             
             else:
                 await ctx.send("Invalid user mention. Please use '@' to find a user.")
