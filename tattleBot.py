@@ -82,6 +82,9 @@ def run():
         Function:
         - Asks user for user tag and message to file complaint.
         """
+        # Get user tag of command author:
+        teaAuthor = ctx.message.author.name
+
         await ctx.send("Who do you have tea on? Use '@' to find a user. Enter 'x' to cancel.")
         try:
             user_tag = await bot.wait_for('message', timeout=60, check=lambda m: m.author == ctx.author)
@@ -116,7 +119,7 @@ def run():
                 banLength = await bot.wait_for('message', timeout=60, check=lambda m: m.author == ctx.author and is_integer(m))
                 await ctx.send("Thank you for your tea. Someone will look into it. You can include evidence below:")
 
-                gcFile(teahouseTea, user_name, complaint, banLength)
+                gcFile(teahouseTea, user_name, complaint, banLength, teaAuthor)
             else:
                 await ctx.send("Invalid user mention.")
         except asyncio.TimeoutError:
@@ -246,11 +249,12 @@ def run():
             filteredComplaints = teaGet(teahouseTea, member.global_name)
 
             if filteredComplaints:
-                message = "Compiled Complaints: \n----------------------\n"
+                message = "----------------------\n"
                 for row in filteredComplaints:
                     complaint = (
                         f"Date: {row[1]}\n"
                         f"Tea: {row[2]}\n"
+                        f"Accuser: {row[4]}\n"
                         f"Demotion Length Request: {row[3]}\n"
                         f"----------------------\n")
                     message += complaint

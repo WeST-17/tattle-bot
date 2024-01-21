@@ -2,10 +2,10 @@ from datetime import date, datetime, timedelta
 
 # Helper Functions:
 # Appends complaint to database
-def gcFile(sheet, accused: str, tea: str, ban: str):
+def gcFile(sheet, accused: str, tea: str, ban: str, author: str):
     currentDate = date.today().isoformat()
     all_values = sheet.get_all_values()
-    sheet.append_row([accused, currentDate, tea.content, ban.content])
+    sheet.append_row([accused, currentDate, tea.content, ban.content, author])
 
 # Compiles complaint report for admins by username
 # Need to update to include date range. Maybe default to past month? (01/15/2024)
