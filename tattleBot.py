@@ -1,11 +1,11 @@
 from helper import *
-from version_notes import version_1_1
+from version_notes import version_1_2
 
 from dotenv import load_dotenv
 from os import environ
 import discord
 import re
-from discord.ext import commands
+from discord.ext import commands, tasks
 import asyncio
 
 # Google Sheets API and gspread imports
@@ -21,10 +21,9 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 # Discord Bot API
 TOKEN = environ.get('DISCORD_TOKEN')
 
-def run():
-    # Maybe could implement a separate file for admin roles?
-    # admin = [] or from a json file
+admin_roles = []
 
+def run():
     # Service account login for excel, can change depending on form access
     gc = gspread.service_account(filename="tattle_cred.json")
     # Opens google sheet
@@ -39,16 +38,44 @@ def run():
     
     bot = commands.Bot(command_prefix='!', intents=intents)
 
+    # Function for checking demotion periods, updating sheet, and sending updates to admins:
+    # Right now, checks for admin roles each time. Need to update to do more efficiently. Okay if I end up sharing this with other servers(?)
+    @tasks.loop(hours=24, reconnect=True)
+    async def demotionUpdate(channel):
+        userDemoUpdate = autoDemoUpdate(demotionSheet)
+        if userDemoUpdate:
+            updateMessage = ""
+            for item in userDemoUpdate:
+                updateMessage += f"@{item}\n"
+
+            if channel:
+                await channel.send(admin_roles[0].mention)
+                embededUpdate = discord.Embed(title=f"Users to Remove from the Cup of Shame:", description=updateMessage, color=0xaeffff)
+                await channel.send(embed=embededUpdate)
+        
+        await asyncio.sleep(86400)  # Sleep for 24 hours before the next iteration
+
+    async def getAdmin(guild):
+        admin_roles = [role for role in guild.roles if role.permissions.administrator]
+
+    @demotionUpdate.before_loop
+    async def before_demotion_update():
+        await bot.wait_until_ready()
+
     @bot.event
     async def on_ready():
+        channel = discord.utils.get(bot.get_all_channels(), name="teahouse-tattles")
+        await getAdmin(channel.guild)
+        demotionUpdate.start(channel)
         print('Logged on as {0}!'.format(bot.user))
+    
 
     @bot.command()
     async def version(ctx):
         '''
         See latest version notes.
         '''
-        await ctx.send(version_1_1)
+        await ctx.send(version_1_2)
         return
 
     @bot.command()
@@ -167,7 +194,7 @@ def run():
 
     # Admin command, update database and demote user role
     @bot.command()
-    @commands.has_any_role('Brew Tea Ful', 'Koala Tea')
+    @commands.has_guild_permissions(administrator=True)
     async def demote(ctx, user_tag: str):
         '''
         Update demotion period for a user. Add user to Cup of Shame(Under Construction).
@@ -223,7 +250,7 @@ def run():
 
      
     @bot.command()
-    @commands.has_any_role('Brew Tea Ful', 'Koala Tea')
+    @commands.has_guild_permissions(administrator=True)
     async def compile(ctx, user_tag: str):
         '''
         Get submissions from database in discord.

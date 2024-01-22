@@ -1,3 +1,10 @@
+version_1_2 = (
+    f"Tattle Bot v1.2 notes:\n"
+    f"- Updated automatic updater for demotion period checks. Tags admin for notification.\n"
+    f"- Updated google sheet to include the person who submitted a tattle.\n"
+    f"- !compile includes the person who submitted the tattle in each complaint."
+    )
+
 version_1_1 = (
     f"Tattle Bot v1.1 notes:\n"
     f"- Updated !check to send embedded message.\n"

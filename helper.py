@@ -14,6 +14,20 @@ def teaGet(sheet, user: str):
     filtered_complaints = [row for row in complaint_values if row[0] == user]
     return filtered_complaints
 
+# Auto demotion updater:
+def autoDemoUpdate(sheet):
+    now = datetime.today()
+    dataCheck = sheet.get_all_values()
+    autoCheck = [row for row in dataCheck[1:] if datetime.strptime(row[2], "%Y-%m-%d") < now]
+    
+    if autoCheck:
+        usersDemoOver = []
+        for del_row in autoCheck:
+            usersDemoOver.append(del_row[0])
+            row_to_delete = dataCheck.index(del_row) + 1
+            sheet.delete_rows(row_to_delete)
+        return usersDemoOver
+
 # Demotion checker
 def demoCheck(sheet, user: str):
     demotion_check = sheet.get_all_values()
@@ -25,12 +39,12 @@ def demoCheck(sheet, user: str):
 
         # Obtain cells to update
         cellUpdate = "B" + str(demotion_check.index(target_row) + 1)
-        dateCellUpdate = "C" + str(demotion_check.index(target_row) + 1)
-        target_col_index = 1
+        #dateCellUpdate = "C" + str(demotion_check.index(target_row) + 1)
+        #target_col_index = 1
         target_date_index = 2
 
         current_end_date = datetime.strptime(target_row[target_date_index], "%Y-%m-%d")
-        current_weeks = int(target_row[target_col_index])
+        #current_weeks = int(target_row[target_col_index])
         totalWeeksLeft = (current_end_date - weeksPassed).days // 7 + 1
 
         sheet.update(values=str(totalWeeksLeft), range_name=cellUpdate)
