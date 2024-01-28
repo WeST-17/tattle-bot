@@ -39,7 +39,7 @@ def run():
     bot = commands.Bot(command_prefix='!', intents=intents)
 
     # Function for checking demotion periods, updating sheet, and sending updates to admins:
-    # Right now, checks for admin roles each time. Need to update to do more efficiently. Okay if I end up sharing this with other servers(?)
+    # Admin list as global variable to start once at bot startup
     @tasks.loop(hours=24, reconnect=True)
     async def demotionUpdate(channel):
         userDemoUpdate = autoDemoUpdate(demotionSheet)
@@ -56,6 +56,7 @@ def run():
         await asyncio.sleep(86400)  # Sleep for 24 hours before the next iteration
 
     async def getAdmin(guild):
+        global admin_roles
         admin_roles = [role for role in guild.roles if role.permissions.administrator]
 
     @demotionUpdate.before_loop
@@ -204,7 +205,7 @@ def run():
         Function:
         - Allows admins to add 'Cup of Shame' demotion role per person. Can adjust amount of time. Tracked in google sheets(?)
         '''
-        demote_role = discord.utils.get(ctx.guild.roles, name="Cup of Shame")
+        # demote_role = discord.utils.get(ctx.guild.roles, name="Cup of Shame")
 
         try:
             # Extract user ID using regular expression
@@ -231,14 +232,6 @@ def run():
                 adjustDemotion = demotion(demotionSheet, member.global_name, demoWeeksAdd)
 
                 await ctx.send(adjustDemotion)
-                
-                # Set member role to Cup of Shame:
-                # if demote_role:
-                #     await member.edit(roles=[])
-                #     await member.add_roles(demote_role)
-                #     await ctx.send(f"{member.display_name} put in the {demote_role.name}")
-                # else:
-                #     await ctx.send("but nothing happened...")
             
             else:
                 await ctx.send("Invalid user mention. Please use '@' to find a user.")
