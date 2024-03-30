@@ -274,7 +274,6 @@ def run():
                     complaint = (
                         f"Date: {row[1]}\n"
                         f"Tea: {row[2]}\n"
-                        f"Accuser: {row[4]}\n"
                         f"Demotion Length Request: {row[3]}\n"
                         f"----------------------\n")
                     message += complaint
