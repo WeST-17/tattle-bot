@@ -1,5 +1,5 @@
 from helper import *
-from version_notes import version_1_2
+from version_notes import version_1_3
 
 from dotenv import load_dotenv
 from os import environ
@@ -76,7 +76,7 @@ def run():
         '''
         See latest version notes.
         '''
-        await ctx.send(version_1_2)
+        await ctx.send(version_1_3)
         return
 
     @bot.command()
@@ -223,13 +223,14 @@ def run():
                     user_name = f"Unknown User (ID: {user_id})"
 
                 await ctx.send("How many demotion weeks should be added? Enter 'x' to cancel.")
-                demoWeeksAdd = await bot.wait_for('message', timeout=60, check=lambda m: m.author == ctx.author and is_integer(m) or is_valid_date(m))
+                demoWeeksAdd = await bot.wait_for('message', timeout=60, check=lambda m: m.author == ctx.author and is_integer(m))
 
                 if demoWeeksAdd.content.lower() == 'x':
                     await ctx.send("Complaint canceled.")
                     return
+
                 # Call function to update Google Sheet database
-                adjustDemotion = demotion(demotionSheet, member.global_name, demoWeeksAdd)
+                adjustDemotion = demotion(demotionSheet, user_name, int(demoWeeksAdd.content))
 
                 await ctx.send(adjustDemotion)
             

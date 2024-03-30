@@ -1,3 +1,8 @@
+version_1_3 = (
+    f"Tattle Bot v1.3 notes:\n"
+    f"- Fixed bug that occurs with int check for !demote.\n"
+    )
+
 version_1_2 = (
     f"Tattle Bot v1.2 notes:\n"
     f"- Updated automatic updater for demotion period checks. Tags admin for notification.\n"

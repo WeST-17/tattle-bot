@@ -53,9 +53,9 @@ def demoCheck(sheet, user: str):
     return userFilter
 
 
-def demotion(sheet, user: str, weeks: str):
+def demotion(sheet, user: str, weeks: int):
     demoAdd = sheet.get_all_values()
-    weeksAdd = int(weeks.content)
+    weeksAdd = weeks
     userFilter = [row for row in demoAdd if row[0] == user]
 
     if userFilter:
@@ -70,7 +70,7 @@ def demotion(sheet, user: str, weeks: str):
         current_weeks = int(target_row[target_col_index])
         totalWeeks = current_weeks + weeksAdd
 
-        current_end_date = datetime.strptime(target_row[target_date_index], "%Y-%m-%d %H:%M:%S")
+        current_end_date = datetime.strptime(target_row[target_date_index], "%Y-%m-%d")
         new_end_date = current_end_date + timedelta(days=7*weeksAdd)
 
         sheet.update(values=str(totalWeeks), range_name=cellUpdate)
@@ -83,7 +83,7 @@ def demotion(sheet, user: str, weeks: str):
         return "New user demotion length and end date updated!"
 
 # integer check
-def is_integer(message):
+def is_integer(message: str):
     try:
         int(message.content)
         return True
