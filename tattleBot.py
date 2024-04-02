@@ -186,7 +186,7 @@ def run():
             for row in user_demo_check:
                 message = (
                     f"Remaining weeks of demotion: {row[1]}\n"
-                    f"Last day of demotion: {row[2]}"
+                    f"Last day of demotion: {row[2][:10]}"
                 )
                 embedCheck = discord.Embed(title=f"Current Demotion Period for {member.display_name}", description=message, color=0xaeffff)
                 await ctx.send(embed=embedCheck)
