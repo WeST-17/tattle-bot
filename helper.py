@@ -18,7 +18,7 @@ def teaGet(sheet, user: str):
 def autoDemoUpdate(sheet):
     now = datetime.today()
     dataCheck = sheet.get_all_values()
-    autoCheck = [row for row in dataCheck[1:] if datetime.strptime(row[2], "%Y-%m-%d %H:%M:%S") < now]
+    autoCheck = [row for row in dataCheck[1:] if datetime.strptime(row[2], "%Y-%m-%d") < now]
     
     if autoCheck:
         usersDemoOver = []
@@ -43,7 +43,7 @@ def demoCheck(sheet, user: str):
         #target_col_index = 1
         target_date_index = 2
 
-        current_end_date = datetime.strptime(target_row[target_date_index], "%Y-%m-%d %H:%M:%S")
+        current_end_date = datetime.strptime(target_row[target_date_index], "%Y-%m-%d")
         #current_weeks = int(target_row[target_col_index])
         totalWeeksLeft = (current_end_date - weeksPassed).days // 7 + 1
 
@@ -70,7 +70,7 @@ def demotion(sheet, user: str, weeks: int):
         current_weeks = int(target_row[target_col_index])
         totalWeeks = current_weeks + weeksAdd
 
-        current_end_date = datetime.strptime(target_row[target_date_index], "%Y-%m-%d %H:%M:%S")
+        current_end_date = datetime.strptime(target_row[target_date_index], "%Y-%m-%d")
         new_end_date = current_end_date + timedelta(days=7*weeksAdd)
 
         sheet.update(values=str(totalWeeks), range_name=cellUpdate)
@@ -94,7 +94,7 @@ def is_integer(message: str):
 def is_valid_date(message):
     try:
         # Try to parse the message content as a date
-        datetime.strptime(message.content, "%Y-%m-%d %H:%M:%S")
+        datetime.strptime(message.content, "%Y-%m-%d")
         return True
     except ValueError:
         return False

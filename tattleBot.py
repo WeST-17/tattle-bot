@@ -36,7 +36,8 @@ def run():
     intents.message_content = True
     intents.members = True
     
-    bot = commands.Bot(command_prefix='!', intents=intents)
+    activity = discord.Activity(type=discord.ActivityType.listening, name="Tattling...")
+    bot = commands.Bot(command_prefix='!', activity=activity, intents=intents)
 
     # Function for checking demotion periods, updating sheet, and sending updates to admins:
     # Admin list as global variable to start once at bot startup
